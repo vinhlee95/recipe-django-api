@@ -24,3 +24,9 @@ class ModelTests(TestCase):
 			password=password
 		)
 		self.assertEqual(user.email, email.lower())
+
+	def test_create_user_invalid_email(self):
+		"""Test creating user with invalid email should throw ValueError"""
+		password = 'password'
+		with self.assertRaises(ValueError):
+			get_user_model().objects.create_user(email=None, password=password)

@@ -5,6 +5,9 @@ class UserManager(BaseUserManager):
 
 	def create_user(self, email, password=None, **extra_fields):
 		"""OUR OWN method to Create and save a new User"""
+		if not email:
+			raise ValueError('Invalid email')
+
 		user = self.model(email=self.normalize_email(email), **extra_fields)
 		user.set_password(password)
 		return user
