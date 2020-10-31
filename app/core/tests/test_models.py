@@ -30,3 +30,11 @@ class ModelTests(TestCase):
 		password = 'password'
 		with self.assertRaises(ValueError):
 			get_user_model().objects.create_user(email=None, password=password)
+
+	def test_create_superuser(self):
+		"""Test creating super user with valid superuser and staff role"""
+		email = 'vinh@TEST.COM'
+		password = 'password'
+		user = get_user_model().objects.create_superuser(email=email, password=password)
+		self.assertTrue(user.is_superuser)
+		self.assertTrue(user.is_staff)
