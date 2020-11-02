@@ -22,5 +22,10 @@ class UserAdmin(authAdmin.UserAdmin):
 			'fields': ('last_login',)
 		})
 	)
+	add_fieldsets = (
+		(None, {
+			'fields': ('email', 'password')
+		}),
+	)
 
 admin.site.register(models.User, UserAdmin)
