@@ -8,7 +8,8 @@ from rest_framework import status
 CREATE_USER_URL = reverse('user:create')
 USER_PAYLOAD = {
 	'email': 'test@testi.com',
-	'password': 'helloworld'
+	'password': 'helloworld',
+	'name': 'Test user'
 }
 
 def create_user(**params):
