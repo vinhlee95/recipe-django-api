@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
+TOKEN_URL = reverse('user:token')
 USER_PAYLOAD = {
 	'email': 'test@testi.com',
 	'password': 'helloworld',
@@ -44,3 +45,35 @@ class PublicUserApiTests(TestCase):
 		})
 		user_exists = get_user_model().objects.filter(email = USER_PAYLOAD['email'])
 		self.assertFalse(user_exists)
+
+	def test_create_token(self):
+		"""Test that a valid token could be created for an user"""
+		# First, create a new user
+		create_user(**USER_PAYLOAD)
+		# Use data of the new user to request for the token
+		res = self.client.post(TOKEN_URL, USER_PAYLOAD)
+		# Assertions
+		self.assertEquals(res.status_code, status.HTTP_200_OK)
+		# Make sure token field exists in res.data
+		self.assertIn('token', res.data)
+
+	def test_create_token_invalid_credentials(self):
+		"""Test if create token fails if invalid credentials are provided"""
+		create_user(**USER_PAYLOAD)
+		invalid_credential = USER_PAYLOAD.copy()
+		invalid_credential['email'] = 'invalid_email@test.com'
+		res = self.client.post(TOKEN_URL, invalid_credential)
+		# Assertions
+		self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertNotIn('token', res.data)
+
+	def test_create_token_missing_user_fields(self):
+		"""Test if create token fails if user fields are missing"""
+		create_user(**USER_PAYLOAD)
+		missing_fields_credential = USER_PAYLOAD.copy()
+		missing_fields_credential['password'] = ''
+		res = self.client.post(TOKEN_URL, missing_fields_credential)
+		# Assertions
+		self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertNotIn('token', res.data)
+
