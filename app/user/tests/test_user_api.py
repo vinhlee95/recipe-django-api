@@ -2,11 +2,13 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, force_authenticate
 from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
+MANAGE_USER_URL = reverse('user:manage')
+
 USER_PAYLOAD = {
 	'email': 'test@testi.com',
 	'password': 'helloworld',
@@ -76,4 +78,36 @@ class PublicUserApiTests(TestCase):
 		# Assertions
 		self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertNotIn('token', res.data)
+
+	def test_private_manage_user_endpoint(self):
+		"""Test if manage user endpoint is a private one."""
+		res = self.client.get(MANAGE_USER_URL)
+		# Assertions
+		self.assertEquals(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class PrivateUserApiTests(TestCase):
+	def setUp(self):
+		self.user = create_user(**USER_PAYLOAD)
+		self.client = APIClient()
+		# Force authenticate the user
+		self.client.force_authenticate(user=self.user)
+
+	def test_get_user_success(self):
+		"""Test if authenticated user can get own user data"""
+		res = self.client.get(MANAGE_USER_URL)
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
+		self.assertEqual(res.data, {
+			'email': self.user.email,
+			'name': self.user.name
+		})
+
+	def test_update_user_success(self):
+		"""Test if user can update own data."""
+		params = {'email': 'update_user@test.com', 'name': 'update_user'}
+		res = self.client.patch(MANAGE_USER_URL, params)
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
+		self.assertEqual(res.data, {
+			'email': params['email'],
+			'name': params['name']
+		})
 
