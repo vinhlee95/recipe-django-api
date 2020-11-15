@@ -12,6 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
 		"""Create a new user and return it"""
 		return get_user_model().objects.create_user(**validated_data)
 
+	def update(self, instance, validated_data):
+		"""Update user data and return updated data"""
+		user = super().update(instance, validated_data)
+		return user
+
 class AuthTokenSerializer(serializers.Serializer):
 	"""Serializer to authenticate user"""
 	email = serializers.CharField()

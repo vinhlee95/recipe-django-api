@@ -7,7 +7,7 @@ from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
-MANAGE_USER_URL = reverse('user:manage')
+MANAGE_USER_URL = reverse('user:me')
 
 USER_PAYLOAD = {
 	'email': 'test@testi.com',
