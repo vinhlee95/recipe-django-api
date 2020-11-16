@@ -1,5 +1,10 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from core import models
+
+def mock_user(email='test@test.com', password='helloworld'):
+	"""Create a mock user and save it into db"""
+	return get_user_model().objects.create(email=email, password=password)
 
 class ModelTests(TestCase):
 
@@ -38,3 +43,11 @@ class ModelTests(TestCase):
 		user = get_user_model().objects.create_superuser(email=email, password=password)
 		self.assertTrue(user.is_superuser)
 		self.assertTrue(user.is_staff)
+
+	def test_tag_str(self):
+		"""Test tag string representation"""
+		tag = models.Tag.objects.create(
+			user=mock_user(),
+			name='Vegan'
+		)
+		self.assertEqual(str(tag), tag.name)
