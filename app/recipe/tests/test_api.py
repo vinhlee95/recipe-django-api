@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient, force_authenticate
 from rest_framework import status
 from core.models import Tag
-from serializers import TagSerializer
+from recipe.serializers import TagSerializer
 
 TAG_URL = reverse('recipe:tag-list')
 
@@ -40,7 +40,7 @@ class PrivateTagApiTests(TestCase):
 		serializer = TagSerializer(tags, many=True)
 
 		# Assertions
-		self.assertEqual(res.status_code, HTTP_200_OK)
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
 		self.assertEqual(res.data, serializer.data)
 
 	def test_list_own_user_tags(self):
@@ -56,7 +56,7 @@ class PrivateTagApiTests(TestCase):
 		res = self.client.get(TAG_URL)
 
 		# Assertions
-		self.assertEqual(res.status_code, HTTP_200_OK)
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
 		self.assertEqual(len(res.data), 1)
 		self.assertEqual(res.data[0]['name'], 'tag_own_user')
 
