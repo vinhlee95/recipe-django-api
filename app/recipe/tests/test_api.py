@@ -9,7 +9,6 @@ from recipe.serializers import TagSerializer
 
 TAG_URL = reverse('recipe:tag-list')
 
-
 def mock_user(email='test@example.com', password='helloworld'):
 	return get_user_model().objects.create_user(email=email, password=password)
 
@@ -60,6 +59,23 @@ class PrivateTagApiTests(TestCase):
 		self.assertEqual(len(res.data), 1)
 		self.assertEqual(res.data[0]['name'], 'tag_own_user')
 
+	def test_create_tag_success(self):
+		"""Test if user can successfully create a tag."""
+		payload = {'name': 'Tag1'}
+		res = self.client.post(TAG_URL, payload)
+		tag_exist = Tag.objects.filter(name=payload['name'], user=self.user).exists()
+
+		# Assertions
+		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(tag_exist, True)
+
+	def test_create_tag_fail_with_invalid_payload(self):
+		"""Test if create tag fails with invalid payload."""
+		payload = {'name': ''}
+		res = self.client.post(TAG_URL, payload)
+
+		# Assertions
+		self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 
