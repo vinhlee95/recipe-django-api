@@ -27,8 +27,12 @@ class IngredientViewSet(BaseRecipeViewSet):
 	serializer_class = serializers.IngredientSerializer
 	queryset = Ingredient.objects.all()
 
-class RecipeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-	"""Manage all recipes in the db"""
+class RecipeViewSet(viewsets.ModelViewSet):
+	"""
+	Manage all recipes in the db
+	We are using ModelViewSet for having a set of "actions" by default
+	Such as: .list(), .retrieve(), .create(), .update() and .destroy()
+	"""
 	serializer_class = serializers.RecipeSerializer
 	queryset = Recipe.objects.all()
 	authentication_classes = (authentication.TokenAuthentication,)
@@ -37,3 +41,10 @@ class RecipeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 	def get_queryset(self):
 		"""Return recipe belongs to an user"""
 		return self.queryset.filter(user=self.request.user).order_by('title')
+
+	def get_serializer_class(self):
+		"""Return proper serializer class for action"""
+		if self.action == 'retrieve':
+			return serializers.RecipeDetailSerializer
+
+		return self.serializer_class
