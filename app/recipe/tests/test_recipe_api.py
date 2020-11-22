@@ -92,3 +92,19 @@ class PrivateRecipeTest(TestCase):
 
 		self.assertEqual(res.status_code, status.HTTP_200_OK)
 		self.assertEqual(res.data, serializer.data)
+
+	def test_create_basic_recipe(self):
+		"""Test if user can create a recipe"""
+		payload = {
+			'title': 'My new recipe',
+			'price': 10,
+			'time_minute': 20,
+			'link': 'https://www.google.com'
+		}
+		res = self.client.post(RECIPE_URL, payload)
+		created_recipe = Recipe.objects.get(id=res.data['id'])
+
+		# Assertions
+		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+		for key in payload.keys():
+			self.assertEqual(payload[key], getattr(created_recipe, key))
