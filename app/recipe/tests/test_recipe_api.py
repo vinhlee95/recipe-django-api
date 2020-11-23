@@ -1,17 +1,26 @@
+import os
+import tempfile
+from PIL import Image
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from rest_framework.test import APIClient, force_authenticate
+from rest_framework.test import APIClient
 from rest_framework import status
 from core.models import Recipe, Tag, Ingredient
 from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
+from core.tests.authenticated_test_case import AuthenticatedTestCase
 
 RECIPE_URL = reverse('recipe:recipe-list')
 
 def get_detail_url(recipe_id):
 	"""Return recipe detail URL"""
 	return reverse('recipe:recipe-detail', args=[recipe_id])
+
+def get_image_upload_url(recipe_id):
+	"""Return URL for uploading recipe image"""
+	return reverse('recipe:recipe-image-upload', args=[recipe_id])
 
 def mock_user(email='test@example.com', password='helloworld'):
 	return get_user_model().objects.create_user(email=email, password=password)
@@ -45,13 +54,11 @@ class PublicRecipeApiTest(TestCase):
 		self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class PrivateRecipeTest(TestCase):
+class PrivateRecipeTest(AuthenticatedTestCase):
 	"""Test private recipe API"""
 
 	def setUp(self):
-		self.user = mock_user()
-		self.client = APIClient()
-		self.client.force_authenticate(user=self.user)
+		super().setUp()
 
 	def test_list_all_recipes(self):
 		"""Test if authenticated user could list all recipes"""

@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from rest_framework.test import APIClient, force_authenticate
+from core.tests.authenticated_test_case import AuthenticatedTestCase
+from rest_framework.test import APIClient
 from rest_framework import status
 from core.models import Ingredient
 from recipe.serializers import IngredientSerializer
@@ -21,12 +22,10 @@ class PublicIngredientApiTests(TestCase):
 		res = self.client.get(INGREDIENT_URL)
 		self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
-class PrivateIngredientApiTests(TestCase):
+class PrivateIngredientApiTests(AuthenticatedTestCase):
 	"""Test private ingredient API."""
 	def setUp(self):
-		self.user = mock_user()
-		self.client = APIClient()
-		self.client.force_authenticate(user=self.user)
+		super().setUp()
 
 	def test_list_all_ingredients(self):
 		"""Test if authenticated user could list all ingredient"""
