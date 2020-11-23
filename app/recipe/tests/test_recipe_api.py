@@ -108,3 +108,23 @@ class PrivateRecipeTest(TestCase):
 		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 		for key in payload.keys():
 			self.assertEqual(payload[key], getattr(created_recipe, key))
+
+	def test_create_recipe_with_tags(self):
+		"""Test if user can create recipe with tags"""
+		tag1 = mock_tag(self.user, 'tag1')
+		tag2 = mock_tag(self.user, 'tag2')
+		payload = {
+			'title': 'My new recipe',
+			'price': 10,
+			'time_minute': 20,
+			'tags': [tag1.id, tag2.id]
+		}
+		res = self.client.post(RECIPE_URL, payload)
+		created_recipe = Recipe.objects.get(id=res.data['id'])
+		recipe_tags = created_recipe.tags.all()
+
+		# Assertions
+		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(len(recipe_tags), 2)
+		self.assertIn(tag1, recipe_tags)
+		self.assertIn(tag2, recipe_tags)
