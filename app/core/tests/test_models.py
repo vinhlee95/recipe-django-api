@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from core import models
+from unittest.mock import patch
 
 def mock_user(email='test@test.com', password='helloworld'):
 	"""Create a mock user and save it into db"""
@@ -62,3 +63,14 @@ class ModelTests(TestCase):
 			price=10
 		)
 		self.assertEqual(str(recipe), recipe.title)
+
+	# Mock .uuid4() method of uuid module
+	@patch('uuid.uuid4')
+	def test_recipe_image_filename(self, mock_uuid):
+		"""Test if recipe image is saved to correct location"""
+		uuid = 'test-uuid'
+		# Mock return value of .uuid4() method
+		mock_uuid.return_value = uuid
+		file_path = models.get_recipe_image_path(None, 'myimage.jpg')
+
+		self.assertEqual(file_path, f'uploads/recipe/{uuid}.jpg')
