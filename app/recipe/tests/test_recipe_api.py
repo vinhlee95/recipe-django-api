@@ -20,7 +20,7 @@ def get_detail_url(recipe_id):
 
 def get_image_upload_url(recipe_id):
 	"""Return URL for uploading recipe image"""
-	return reverse('recipe:recipe-image-upload', args=[recipe_id])
+	return reverse('recipe:recipe-upload-image', args=[recipe_id])
 
 def mock_user(email='test@example.com', password='helloworld'):
 	return get_user_model().objects.create_user(email=email, password=password)
@@ -195,3 +195,35 @@ class PrivateRecipeTest(AuthenticatedTestCase):
 		self.assertEqual(recipe.price, payload['price'])
 		self.assertEqual(recipe.time_minute, payload['time_minute'])
 		self.assertEqual(len(recipe_tags), 0)
+
+class ImageRecipeTest(AuthenticatedTestCase):
+	"""Test recipe image API"""
+	def setUp(self):
+		"""Setup the test with authenticated user and premade recipe"""
+		super().setUp()
+		self.recipe = mock_recipe(self.user)
+		self.url = get_image_upload_url(self.recipe.id)
+
+	def tearDown(self):
+		"""Clean up after test. Only need to remove temp image files for now"""
+		self.recipe.image.delete()
+
+	def test_upload_recipe_image(self):
+		"""Test if user can upload image for recipe"""
+		# Create a new temporary file
+		with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+			image = Image.new('RGB', (10, 10))
+			# Save new image to created temporary file object
+			image.save(ntf, format='JPEG')
+			ntf.seek(0)
+			res = self.client.post(self.url, {'image': ntf}, format='multipart')
+
+		self.recipe.refresh_from_db()
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
+		self.assertIn('image', res.data)
+		self.assertTrue(os.path.exists(self.recipe.image.path))
+
+	def test_upload_bad_image(self):
+		"""Test if user cannot upload bad image"""
+		res = self.client.post(self.url, {'image': 'bad_image'}, format='multipart')
+		self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
