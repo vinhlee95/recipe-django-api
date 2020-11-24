@@ -196,6 +196,30 @@ class PrivateRecipeTest(AuthenticatedTestCase):
 		self.assertEqual(recipe.time_minute, payload['time_minute'])
 		self.assertEqual(len(recipe_tags), 0)
 
+	def test_filter_recipe_by_tags(self):
+		"""Test filtering recipes by tag id"""
+		# Mock recipe and tags
+		recipe_1 = mock_recipe(self.user)
+		recipe_2 = mock_recipe(self.user)
+		tag_1 = mock_tag(self.user)
+		tag_2 = mock_tag(self.user)
+		recipe_1.tags.add(tag_1, tag_2)
+		recipe_2.tags.add(tag_1)
+
+		serializer_1 = RecipeSerializer(recipe_1)
+		serializer_2 = RecipeSerializer(recipe_2)
+
+		res = self.client.get(RECIPE_URL, {'tags': f'{tag_1.id}'})
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
+		self.assertEqual(len(res.data), 2)
+		self.assertIn(serializer_1.data, res.data)
+		self.assertIn(serializer_2.data, res.data)
+
+		res_2 = self.client.get(RECIPE_URL, {'tags': f'{tag_2.id}'})
+		self.assertEqual(res_2.status_code, status.HTTP_200_OK)
+		self.assertEqual(len(res_2.data), 1)
+		self.assertIn(serializer_1.data, res_2.data)
+
 class ImageRecipeTest(AuthenticatedTestCase):
 	"""Test recipe image API"""
 	def setUp(self):
